@@ -73,6 +73,11 @@ let dragging = false;
 canvas.addEventListener( "mousedown", e => dragging = true );
 canvas.addEventListener( "mouseup", e => dragging = false );
 
+var camera = {
+  x: 0.0,
+  y: 0.0,
+  z: 1.0
+};
 canvas.addEventListener( "mousemove", function ( event ) {
   if ( !dragging ) return 0;
   let rect = canvas.getBoundingClientRect();
@@ -80,10 +85,12 @@ canvas.addEventListener( "mousemove", function ( event ) {
   let y = event.clientY - rect.top;
 
   // new camera position based on mouse (inverted x, y) [-1,1]
-  var cameraX = ( 0.5 - x / canvas.width ) * 2.0;
-  let cameraY = ( y / canvas.height - 0.5 ) * 2.0;
-  let cameraZ = 1.0;
-  let cameraPosition = vec3.fromValues( cameraX, cameraY, cameraZ );
+  // Calculate the camera position relative to the stored position
+  camera.x = camera.x + ( 0.5 - x / canvas.width ) * 2.0;
+  camera.y = camera.y + ( y / canvas.height - 0.5 ) * 2.0;
+  camera.z = camera.z + 1.0;
+
+  let cameraPosition = vec3.fromValues( camera.x, camera.y, camera.z );
   vec3.normalize( cameraPosition, cameraPosition );
   vec3.scale( cameraPosition, cameraPosition, 200.0 );
 
@@ -95,6 +102,30 @@ canvas.addEventListener( "mousemove", function ( event ) {
   gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
   gl.drawArrays( gl.POINTS, 0, vertices.length / 3 );
 } );
+
+// canvas.addEventListener( "wheel", function ( event ) {
+//   event.preventDefault();
+//   console.log( event.deltaY / 100 );
+
+//   let zoomAmount = event.deltaY > 0 ? -0.1 : 0.1;
+//   camera.z += zoomAmount;
+//   camera.z = Math.max( camera.z, 0.1 );
+//   camera.z = Math.min( camera.z, 4.0 );
+
+//   let cameraPosition = vec3.fromValues( camera.x, camera.y, camera.z );
+//   vec3.normalize( cameraPosition, cameraPosition );
+//   vec3.scale( cameraPosition, cameraPosition, 200.0 );
+
+//   // Update model-view matrix
+//   mat4.lookAt( modelViewMatrix, cameraPosition, [ 0.0, 0.0, 0.0 ], [ 0.0, 1.0, 0.0 ] );
+//   gl.uniformMatrix4fv( uModelViewMatrix, false, modelViewMatrix );
+
+//   // Clear canvas and draw cube
+//   gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+//   gl.drawArrays( gl.POINTS, 0, vertices.length / 3 );
+// } );
+
+
 
 // Clear canvas and draw cube
 gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
